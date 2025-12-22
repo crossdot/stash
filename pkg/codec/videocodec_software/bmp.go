@@ -6,6 +6,12 @@ type Codec_software_bmp struct {
 	BaseSoftwareVideoCodec
 }
 
+func NewCodec_software_bmp() *Codec_software_bmp {
+	c := &Codec_software_bmp{}
+	c.BaseSoftwareVideoCodec.self = c
+	return c
+}
+
 func (f *Codec_software_bmp) Name() string {
 	return "BMP"
 }

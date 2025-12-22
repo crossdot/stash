@@ -1,9 +1,18 @@
 package videocodec_hardware
 
-import "github.com/stashapp/stash/pkg/codec"
+import (
+	"github.com/stashapp/stash/pkg/codec"
+	"github.com/stashapp/stash/pkg/ffmpeg"
+)
 
 type Codec_hardware_ivp9 struct {
 	BaseHardwareVideoCodec
+}
+
+func NewCodec_hardware_ivp9() *Codec_hardware_ivp9 {
+	c := &Codec_hardware_ivp9{}
+	c.BaseHardwareVideoCodec.self = c
+	return c
 }
 
 func (f *Codec_hardware_ivp9) Name() string {
@@ -14,4 +23,35 @@ func (f *Codec_hardware_ivp9) CodeName() string {
 	return "vp9_qsv"
 }
 
+func (f *Codec_hardware_ivp9) HwDeviceInit(args ffmpeg.Args, fullhw bool) ffmpeg.Args {
+	if fullhw {
+		args = append(args, "-hwaccel")
+		args = append(args, "qsv")
+		args = append(args, "-hwaccel_output_format")
+		args = append(args, "qsv")
+	} else {
+		args = append(args, "-init_hw_device")
+		args = append(args, "qsv=hw")
+		args = append(args, "-filter_hw_device")
+		args = append(args, "hw")
+	}
+	return args
+}
+
+// Returns the max resolution for a given codec, or a default
+func (c *Codec_hardware_ivp9) HwCodecMaxRes() (int, int) {
+	return 0, 0
+}
+
+// Initialise a video filter for HW encoding
+func (c *Codec_hardware_ivp9) hwFilterInit(fullhw bool) VideoFilter {
+	var videoFilter VideoFilter
+	if !fullhw {
+		videoFilter = videoFilter.Append("hwupload=extra_hw_frames=64")
+		videoFilter = videoFilter.Append("format=qsv")
+	}
+	return videoFilter
+}
+
 var _ codec.Codec = (*Codec_hardware_ivp9)(nil)
+var _ codec.HardwareCodec = (*Codec_hardware_ivp9)(nil)

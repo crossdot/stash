@@ -6,6 +6,12 @@ type Codec_software_libwebp struct {
 	BaseSoftwareVideoCodec
 }
 
+func NewCodec_software_libwebp() *Codec_software_libwebp {
+	c := &Codec_software_libwebp{}
+	c.BaseSoftwareVideoCodec.self = c
+	return c
+}
+
 func (f *Codec_software_libwebp) Name() string {
 	return "WebP"
 }

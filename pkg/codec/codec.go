@@ -1,5 +1,11 @@
 package codec
 
+import (
+	"context"
+
+	"github.com/stashapp/stash/pkg/ffmpeg"
+)
+
 type Encoder interface {
 	Encode([]byte) ([]byte, error)
 }
@@ -13,5 +19,11 @@ type Codec interface {
 	// Decoder
 	Name() string
 	CodeName() string
-	InitHWSupport() bool
+}
+
+type HardwareCodec interface {
+	InitHWSupport(context.Context) bool
+	HwDeviceInit(ffmpeg.Args, bool) ffmpeg.Args
+	HwFilterInit(fullhw bool) VideoFilter
+	HwCodecMaxRes() (int, int)
 }

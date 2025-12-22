@@ -1,7 +1,7 @@
 package videocodec_software
 
-type BaseSoftwareVideoCodec struct{}
+import "github.com/stashapp/stash/pkg/codec"
 
-func (f *BaseSoftwareVideoCodec) InitHWSupport() bool {
-	return true
+type BaseSoftwareVideoCodec struct {
+	self codec.Codec
 }

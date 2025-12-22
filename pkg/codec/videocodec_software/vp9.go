@@ -6,6 +6,12 @@ type Codec_software_vp9 struct {
 	BaseSoftwareVideoCodec
 }
 
+func NewCodec_software_vp9() *Codec_software_vp9 {
+	c := &Codec_software_vp9{}
+	c.BaseSoftwareVideoCodec.self = c
+	return c
+}
+
 func (f *Codec_software_vp9) Name() string {
 	return "VPX-VP9"
 }

@@ -6,6 +6,12 @@ type Codec_software_a264 struct {
 	BaseSoftwareVideoCodec
 }
 
+func NewCodec_software_a264() *Codec_software_a264 {
+	c := &Codec_software_a264{}
+	c.BaseSoftwareVideoCodec.self = c
+	return c
+}
+
 func (f *Codec_software_a264) Name() string {
 	return "x264"
 }

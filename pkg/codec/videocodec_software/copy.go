@@ -6,6 +6,12 @@ type Codec_software_copy struct {
 	BaseSoftwareVideoCodec
 }
 
+func NewCodec_software_copy() *Codec_software_copy {
+	c := &Codec_software_copy{}
+	c.BaseSoftwareVideoCodec.self = c
+	return c
+}
+
 func (f *Codec_software_copy) Name() string {
 	return "Copy"
 }
