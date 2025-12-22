@@ -110,6 +110,41 @@ func (b *BaseHardwareVideoCodec) initHWSupport(ctx context.Context) bool {
 	}
 }
 
+func (b *BaseHardwareVideoCodec) hwCanFullHWTranscode(ctx context.Context, vf *models.VideoFile, reqHeight int) bool {
+	var args Args
+	args = append(args, "-hide_banner")
+	args = args.LogLevel(LogLevelWarning)
+	args = args.XError()
+	args = b.self.(codec.HardwareCodec).HwDeviceInit(args, true)
+	args = args.Input(vf.Path)
+	args = args.Duration(1)
+
+	videoFilter := b.hwMaxResFilter(vf, reqHeight, true)
+	args = append(args, CodecInit(codec)...)
+	args = args.VideoFilter(videoFilter)
+
+	args = args.Format("null")
+	args = args.Output("-")
+
+	cmd := f.Command(ctx, args)
+
+	var stderr bytes.Buffer
+	cmd.Stderr = &stderr
+
+	if err := cmd.Run(); err != nil {
+		errOutput := stderr.String()
+
+		if len(errOutput) == 0 {
+			errOutput = err.Error()
+		}
+
+		logger.Debugf("[InitHWSupport] Full hardware transcode for file %s not supported. Error output:\n%s", vf.Basename, errOutput)
+		return false
+	}
+
+	return true
+}
+
 // func (f *BaseHardwareVideoCodec) HwDeviceInit(args ffmpeg.Args, fullhw bool) ffmpeg.Args {
 // 	return args
 // }
