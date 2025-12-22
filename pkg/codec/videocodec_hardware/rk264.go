@@ -3,6 +3,7 @@ package videocodec_hardware
 import (
 	"github.com/stashapp/stash/pkg/codec"
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 type Codec_hardware_rk264 struct {
@@ -57,6 +58,22 @@ func (c *Codec_hardware_rk264) hwApplyFullHWFilter(args VideoFilter, fullhw bool
 	// For Rockchip, no extra mapping here. If there is no scale filter,
 	// leave frames in DRM_PRIME for the encoder.
 	return args
+}
+
+// Switch scaler
+func (c *Codec_hardware_rk264) hwApplyScaleTemplate(sargs string, match []int, vf *models.VideoFile, fullhw bool) VideoFilter {
+	var template string
+
+	// The original filter chain is a fallback for maximum compatibility:
+	// "scale_rkrga=$value:format=nv12,hwdownload,format=nv12,hwupload"
+	// It avoids hwmap(rkrga→rkmpp) failures (-38/-12) seen on some builds
+	// by downloading the scaled frame to system RAM and re-uploading it.
+	// The filter chain below uses a zero-copy approach, passing the hardware-scaled
+	// frame directly to the encoder. This is more efficient but may be less stable.
+	template = "scale_rkrga=$value"
+
+	// Rockchip's scale_rkrga supports -1/-2; don't apply minus-one hack here.
+	return VideoFilter(templateReplaceScale(sargs, template, match, vf, false))
 }
 
 // Returns the max resolution for a given codec, or a default

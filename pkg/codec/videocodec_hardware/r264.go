@@ -3,6 +3,7 @@ package videocodec_hardware
 import (
 	"github.com/stashapp/stash/pkg/codec"
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 type Codec_hardware_r264 struct {
@@ -36,6 +37,11 @@ func (c *Codec_hardware_r264) hwFilterInit(fullhw bool) VideoFilter {
 // Apply format switching if applicable
 func (c *Codec_hardware_r264) hwApplyFullHWFilter(args VideoFilter, fullhw bool) VideoFilter {
 	return args
+}
+
+// Switch scaler
+func (c *Codec_hardware_r264) hwApplyScaleTemplate(sargs string, match []int, vf *models.VideoFile, fullhw bool) VideoFilter {
+	return VideoFilter(sargs)
 }
 
 // Returns the max resolution for a given codec, or a default

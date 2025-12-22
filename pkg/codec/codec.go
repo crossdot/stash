@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 type Encoder interface {
@@ -26,5 +27,6 @@ type HardwareCodec interface {
 	HwDeviceInit(ffmpeg.Args, bool) ffmpeg.Args
 	HwFilterInit(fullhw bool) VideoFilter
 	hwApplyFullHWFilter(args VideoFilter, fullhw bool) VideoFilter
+	hwApplyScaleTemplate(sargs string, match []int, vf *models.VideoFile, fullhw bool) VideoFilter
 	HwCodecMaxRes() (int, int)
 }

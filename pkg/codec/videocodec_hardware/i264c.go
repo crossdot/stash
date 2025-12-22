@@ -3,6 +3,7 @@ package videocodec_hardware
 import (
 	"github.com/stashapp/stash/pkg/codec"
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 type Codec_hardware_i264c struct {
@@ -54,6 +55,19 @@ func (c *Codec_hardware_i264c) hwApplyFullHWFilter(args VideoFilter, fullhw bool
 		args = args.Append("scale_qsv=format=nv12")
 	}
 	return args
+}
+
+// Switch scaler
+func (c *Codec_hardware_i264c) hwApplyScaleTemplate(sargs string, match []int, vf *models.VideoFile, fullhw bool) VideoFilter {
+	var template string
+
+	template = "scale_qsv=$value"
+	if fullhw && f.version.Gteq(Version{major: 3, minor: 3}) { // Added in FFMpeg 3.3
+		template += ":format=nv12"
+	}
+
+	// BUG: [scale_qsv]: Size values less than -1 are not acceptable.
+	return VideoFilter(templateReplaceScale(sargs, template, match, vf, true))
 }
 
 // Returns the max resolution for a given codec, or a default

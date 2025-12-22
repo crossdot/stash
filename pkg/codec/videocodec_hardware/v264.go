@@ -3,6 +3,7 @@ package videocodec_hardware
 import (
 	"github.com/stashapp/stash/pkg/codec"
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 type Codec_hardware_v264 struct {
@@ -43,6 +44,18 @@ func (c *Codec_hardware_v264) hwApplyFullHWFilter(args VideoFilter, fullhw bool)
 		args = args.Append("scale_vaapi=format=nv12")
 	}
 	return args
+}
+
+// Switch scaler
+func (c *Codec_hardware_v264) hwApplyScaleTemplate(sargs string, match []int, vf *models.VideoFile, fullhw bool) VideoFilter {
+	var template string
+
+	template = "scale_vaapi=$value"
+	if fullhw && f.version.Gteq(Version{major: 3, minor: 1}) { // Added in FFMpeg 3.1
+		template += ":format=nv12"
+	}
+
+	return VideoFilter(templateReplaceScale(sargs, template, match, vf, false))
 }
 
 // Returns the max resolution for a given codec, or a default

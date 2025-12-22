@@ -3,6 +3,7 @@ package videocodec_hardware
 import (
 	"github.com/stashapp/stash/pkg/codec"
 	"github.com/stashapp/stash/pkg/ffmpeg"
+	"github.com/stashapp/stash/pkg/models"
 )
 
 type Codec_hardware_n264h struct {
@@ -53,6 +54,18 @@ func (c *Codec_hardware_n264h) hwApplyFullHWFilter(args VideoFilter, fullhw bool
 		args = args.Append("scale_cuda=format=yuv420p")
 	}
 	return args
+}
+
+// Switch scaler
+func (c *Codec_hardware_n264h) hwApplyScaleTemplate(sargs string, match []int, vf *models.VideoFile, fullhw bool) VideoFilter {
+	var template string
+
+	template = "scale_cuda=$value"
+	if fullhw && f.version.Gteq(Version{major: 5}) { // Added in FFMpeg 5
+		template += ":format=yuv420p"
+	}
+
+	return VideoFilter(templateReplaceScale(sargs, template, match, vf, false))
 }
 
 // Returns the max resolution for a given codec, or a default
