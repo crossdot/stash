@@ -38,11 +38,6 @@ func (f *Codec_hardware_i264c) HwDeviceInit(args ffmpeg.Args, fullhw bool) ffmpe
 	return args
 }
 
-// Returns the max resolution for a given codec, or a default
-func (c *Codec_hardware_i264c) HwCodecMaxRes() (int, int) {
-	return 4096, 4096
-}
-
 // Initialise a video filter for HW encoding
 func (c *Codec_hardware_i264c) hwFilterInit(fullhw bool) VideoFilter {
 	var videoFilter VideoFilter
@@ -51,6 +46,19 @@ func (c *Codec_hardware_i264c) hwFilterInit(fullhw bool) VideoFilter {
 		videoFilter = videoFilter.Append("format=qsv")
 	}
 	return videoFilter
+}
+
+// Apply format switching if applicable
+func (c *Codec_hardware_i264c) hwApplyFullHWFilter(args VideoFilter, fullhw bool) VideoFilter {
+	if fullhw && f.version.Gteq(Version{major: 3, minor: 3}) { // Added in FFMpeg 3.3
+		args = args.Append("scale_qsv=format=nv12")
+	}
+	return args
+}
+
+// Returns the max resolution for a given codec, or a default
+func (c *Codec_hardware_i264c) HwCodecMaxRes() (int, int) {
+	return 4096, 4096
 }
 
 var _ codec.Codec = (*Codec_hardware_i264c)(nil)

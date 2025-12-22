@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"math"
 	"os"
 	"regexp"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/stashapp/stash/pkg/codec"
@@ -18,8 +20,6 @@ import (
 type BaseHardwareVideoCodec struct {
 	self codec.Codec
 }
-
-var scaler_re = regexp.MustCompile(`scale=(?P<value>([-\d]+):([-\d]+))`)
 
 func (b *BaseHardwareVideoCodec) InitHWSupport(ctx context.Context) bool {
 	if b.self == nil {
@@ -145,19 +145,59 @@ func (b *BaseHardwareVideoCodec) hwCanFullHWTranscode(ctx context.Context, vf *m
 	return true
 }
 
+// Prepend input for hardware encoding only
 // func (f *BaseHardwareVideoCodec) HwDeviceInit(args ffmpeg.Args, fullhw bool) ffmpeg.Args {
 // 	return args
 // }
 
-// Return a maxres filter
-func (b *BaseHardwareVideoCodec) hwMaxResFilter(vf *models.VideoFile, reqHeight int, fullhw bool) VideoFilter {
-	if vf.Width == 0 || vf.Height == 0 {
-		return ""
+// Initialise a video filter for HW encoding
+// func (f *FFMpeg) hwFilterInit(toCodec VideoCodec, fullhw bool) VideoFilter {
+// 	return nil
+// }
+
+var scaler_re = regexp.MustCompile(`scale=(?P<value>([-\d]+):([-\d]+))`)
+
+func templateReplaceScale(input string, template string, match []int, vf *models.VideoFile, minusonehack bool) string {
+	result := []byte{}
+
+	if minusonehack {
+		// Parse width and height
+		w, err := strconv.Atoi(input[match[4]:match[5]])
+		if err != nil {
+			logger.Error("failed to parse width")
+			return input
+		}
+		h, err := strconv.Atoi(input[match[6]:match[7]])
+		if err != nil {
+			logger.Error("failed to parse height")
+			return input
+		}
+
+		// Calculate ratio
+		ratio := float64(vf.Width) / float64(vf.Height)
+		if w < 0 {
+			w = int(math.Round(float64(h) * ratio))
+		} else if h < 0 {
+			h = int(math.Round(float64(w) / ratio))
+		}
+
+		// Fix not divisible by 2 errors
+		if w%2 != 0 {
+			w++
+		}
+		if h%2 != 0 {
+			h++
+		}
+
+		template = strings.ReplaceAll(template, "$value", fmt.Sprintf("%d:%d", w, h))
 	}
-	videoFilter := b.self.(codec.HardwareCodec).HwFilterInit(fullhw)
-	maxWidth, maxHeight := b.self.(codec.HardwareCodec).HwCodecMaxRes()
-	videoFilter = videoFilter.ScaleMaxLM(vf.Width, vf.Height, reqHeight, maxWidth, maxHeight)
-	return b.hwCodecFilter(videoFilter, vf, fullhw)
+
+	res := string(scaler_re.ExpandString(result, template, input, match))
+
+	matchStart := match[0]
+	matchEnd := match[1]
+
+	return input[0:matchStart] + res + input[matchEnd:]
 }
 
 // Replace video filter scaling with hardware scaling for full hardware transcoding (also fixes the format)
@@ -170,4 +210,20 @@ func (b *BaseHardwareVideoCodec) hwCodecFilter(args VideoFilter, vf *models.Vide
 	}
 
 	return b.hwApplyScaleTemplate(sargs, match, vf, fullhw)
+}
+
+// Apply format switching if applicable
+// func (f *FFMpeg) hwApplyFullHWFilter(args VideoFilter, codec VideoCodec, fullhw bool) VideoFilter {
+// 	return nil
+// }
+
+// Return a maxres filter
+func (b *BaseHardwareVideoCodec) hwMaxResFilter(vf *models.VideoFile, reqHeight int, fullhw bool) VideoFilter {
+	if vf.Width == 0 || vf.Height == 0 {
+		return ""
+	}
+	videoFilter := b.self.(codec.HardwareCodec).HwFilterInit(fullhw)
+	maxWidth, maxHeight := b.self.(codec.HardwareCodec).HwCodecMaxRes()
+	videoFilter = videoFilter.ScaleMaxLM(vf.Width, vf.Height, reqHeight, maxWidth, maxHeight)
+	return b.hwCodecFilter(videoFilter, vf, fullhw)
 }

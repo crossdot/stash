@@ -37,11 +37,6 @@ func (f *Codec_hardware_n264) HwDeviceInit(args ffmpeg.Args, fullhw bool) ffmpeg
 	return args
 }
 
-// Returns the max resolution for a given codec, or a default
-func (c *Codec_hardware_n264) HwCodecMaxRes() (int, int) {
-	return 4096, 4096
-}
-
 // Initialise a video filter for HW encoding
 func (c *Codec_hardware_n264) hwFilterInit(fullhw bool) VideoFilter {
 	var videoFilter VideoFilter
@@ -50,6 +45,19 @@ func (c *Codec_hardware_n264) hwFilterInit(fullhw bool) VideoFilter {
 		videoFilter = videoFilter.Append("hwupload_cuda")
 	}
 	return videoFilter
+}
+
+// Apply format switching if applicable
+func (c *Codec_hardware_n264) hwApplyFullHWFilter(args VideoFilter, fullhw bool) VideoFilter {
+	if fullhw && f.version.Gteq(Version{major: 5}) { // Added in FFMpeg 5
+		args = args.Append("scale_cuda=format=yuv420p")
+	}
+	return args
+}
+
+// Returns the max resolution for a given codec, or a default
+func (c *Codec_hardware_n264) HwCodecMaxRes() (int, int) {
+	return 4096, 4096
 }
 
 var _ codec.Codec = (*Codec_hardware_n264)(nil)

@@ -35,15 +35,20 @@ func (f *Codec_hardware_vvpx) HwDeviceInit(args ffmpeg.Args, fullhw bool) ffmpeg
 	return args
 }
 
-// Returns the max resolution for a given codec, or a default
-func (c *Codec_hardware_vvpx) HwCodecMaxRes() (int, int) {
-	return 0, 0
-}
-
 // Initialise a video filter for HW encoding
 func (c *Codec_hardware_vvpx) hwFilterInit(fullhw bool) VideoFilter {
 	var videoFilter VideoFilter
 	return videoFilter
+}
+
+// Apply format switching if applicable
+func (c *Codec_hardware_vvpx) hwApplyFullHWFilter(args VideoFilter, fullhw bool) VideoFilter {
+	return args
+}
+
+// Returns the max resolution for a given codec, or a default
+func (c *Codec_hardware_vvpx) HwCodecMaxRes() (int, int) {
+	return 0, 0
 }
 
 var _ codec.Codec = (*Codec_hardware_vvpx)(nil)

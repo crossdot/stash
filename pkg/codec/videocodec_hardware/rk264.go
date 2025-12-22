@@ -39,11 +39,6 @@ func (c *Codec_hardware_rk264) HwDeviceInit(args ffmpeg.Args, fullhw bool) ffmpe
 	return args
 }
 
-// Returns the max resolution for a given codec, or a default
-func (c *Codec_hardware_rk264) HwCodecMaxRes() (int, int) {
-	return 8192, 8192
-}
-
 // Initialise a video filter for HW encoding
 func (c *Codec_hardware_rk264) hwFilterInit(fullhw bool) VideoFilter {
 	var videoFilter VideoFilter
@@ -55,6 +50,18 @@ func (c *Codec_hardware_rk264) hwFilterInit(fullhw bool) VideoFilter {
 		videoFilter = videoFilter.Append("hwupload")
 	}
 	return videoFilter
+}
+
+// Apply format switching if applicable
+func (c *Codec_hardware_rk264) hwApplyFullHWFilter(args VideoFilter, fullhw bool) VideoFilter {
+	// For Rockchip, no extra mapping here. If there is no scale filter,
+	// leave frames in DRM_PRIME for the encoder.
+	return args
+}
+
+// Returns the max resolution for a given codec, or a default
+func (c *Codec_hardware_rk264) HwCodecMaxRes() (int, int) {
+	return 8192, 8192
 }
 
 var _ codec.Codec = (*Codec_hardware_rk264)(nil)

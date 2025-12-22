@@ -25,5 +25,6 @@ type HardwareCodec interface {
 	InitHWSupport(context.Context) bool
 	HwDeviceInit(ffmpeg.Args, bool) ffmpeg.Args
 	HwFilterInit(fullhw bool) VideoFilter
+	hwApplyFullHWFilter(args VideoFilter, fullhw bool) VideoFilter
 	HwCodecMaxRes() (int, int)
 }
