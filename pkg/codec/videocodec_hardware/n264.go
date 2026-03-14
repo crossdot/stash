@@ -73,5 +73,20 @@ func (c *Codec_hardware_n264) HwCodecMaxRes() (int, int) {
 	return 4096, 4096
 }
 
+// Return if a hardware accelerated for HLS is available
+func (c *Codec_hardware_n264) hwCodecHLSCompatible() bool {
+	return true
+}
+
+// Return if a hardware accelerated codec for MP4 is available
+func (c *Codec_hardware_n264) hwCodecMP4Compatible() bool {
+	return true
+}
+
+// Return if a hardware accelerated codec for WebM is available
+func (c *Codec_hardware_n264) hwCodecWEBMCompatible() bool {
+	return false
+}
+
 var _ codec.Codec = (*Codec_hardware_n264)(nil)
 var _ codec.HardwareCodec = (*Codec_hardware_n264)(nil)

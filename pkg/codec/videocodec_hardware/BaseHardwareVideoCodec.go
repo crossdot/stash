@@ -212,11 +212,6 @@ func (b *BaseHardwareVideoCodec) hwCodecFilter(args VideoFilter, vf *models.Vide
 	return b.hwApplyScaleTemplate(sargs, match, vf, fullhw)
 }
 
-// Apply format switching if applicable
-// func (f *FFMpeg) hwApplyFullHWFilter(args VideoFilter, codec VideoCodec, fullhw bool) VideoFilter {
-// 	return nil
-// }
-
 // Return a maxres filter
 func (b *BaseHardwareVideoCodec) hwMaxResFilter(vf *models.VideoFile, reqHeight int, fullhw bool) VideoFilter {
 	if vf.Width == 0 || vf.Height == 0 {
