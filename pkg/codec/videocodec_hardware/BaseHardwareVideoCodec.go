@@ -67,7 +67,7 @@ func (b *BaseHardwareVideoCodec) initHWSupport(ctx context.Context) bool {
 
 	// Test scaling
 	videoFilter := b.hwMaxResFilter(vFile, minHeight, false)
-	args = append(args, CodecInit(codec)...)
+	args = append(args, b.self.CodecInit()...)
 	args = args.VideoFilter(videoFilter)
 
 	args = args.Format("null")
@@ -111,22 +111,22 @@ func (b *BaseHardwareVideoCodec) initHWSupport(ctx context.Context) bool {
 }
 
 func (b *BaseHardwareVideoCodec) hwCanFullHWTranscode(ctx context.Context, vf *models.VideoFile, reqHeight int) bool {
-	var args Args
+	var args ffmpeg.Args
 	args = append(args, "-hide_banner")
-	args = args.LogLevel(LogLevelWarning)
+	args = args.LogLevel(ffmpeg.LogLevelWarning)
 	args = args.XError()
 	args = b.self.(codec.HardwareCodec).HwDeviceInit(args, true)
 	args = args.Input(vf.Path)
 	args = args.Duration(1)
 
 	videoFilter := b.hwMaxResFilter(vf, reqHeight, true)
-	args = append(args, CodecInit(codec)...)
+	args = append(args, b.self.CodecInit()...)
 	args = args.VideoFilter(videoFilter)
 
 	args = args.Format("null")
 	args = args.Output("-")
 
-	cmd := f.Command(ctx, args)
+	cmd := b.Command(ctx, args)
 
 	var stderr bytes.Buffer
 	cmd.Stderr = &stderr
@@ -191,19 +191,19 @@ func templateReplaceScale(input string, template string, match []int, vf *models
 }
 
 // Replace video filter scaling with hardware scaling for full hardware transcoding (also fixes the format)
-func (b *BaseHardwareVideoCodec) hwCodecFilter(args VideoFilter, vf *models.VideoFile, fullhw bool) VideoFilter {
+func (b *BaseHardwareVideoCodec) hwCodecFilter(args ffmpeg.VideoFilter, vf *models.VideoFile, fullhw bool) ffmpeg.VideoFilter {
 	sargs := string(args)
 
 	match := scaler_re.FindStringSubmatchIndex(sargs)
 	if match == nil {
-		return b.hwApplyFullHWFilter(args, fullhw)
+		return b.self.(codec.HardwareCodec).HwApplyFullHWFilter(args, fullhw)
 	}
 
-	return b.hwApplyScaleTemplate(sargs, match, vf, fullhw)
+	return b.self.(codec.HardwareCodec).HwApplyScaleTemplate(sargs, match, vf, fullhw)
 }
 
 // Return a maxres filter
-func (b *BaseHardwareVideoCodec) hwMaxResFilter(vf *models.VideoFile, reqHeight int, fullhw bool) VideoFilter {
+func (b *BaseHardwareVideoCodec) hwMaxResFilter(vf *models.VideoFile, reqHeight int, fullhw bool) ffmpeg.VideoFilter {
 	if vf.Width == 0 || vf.Height == 0 {
 		return ""
 	}

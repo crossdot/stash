@@ -44,3 +44,6 @@ type HardwareCodec interface {
 	// Return if a hardware accelerated codec for WebM is available
 	HwCodecWEBMCompatible() bool
 }
+
+type AudioCodec interface {
+}
