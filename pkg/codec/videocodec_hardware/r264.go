@@ -16,12 +16,17 @@ func NewCodec_hardware_r264() *Codec_hardware_r264 {
 	return c
 }
 
-func (f *Codec_hardware_r264) Name() string {
+func (c *Codec_hardware_r264) Name() string {
 	return "H264 V4L2M2M"
 }
 
-func (f *Codec_hardware_r264) CodeName() string {
+func (c *Codec_hardware_r264) CodeName() string {
 	return "h264_v4l2m2m"
+}
+
+func (c *Codec_hardware_r264) CodecInit() (args ffmpeg.Args) {
+	args = args.VideoCodec(codec)
+	return args
 }
 
 func (f *Codec_hardware_r264) HwDeviceInit(args ffmpeg.Args, fullhw bool) ffmpeg.Args {
@@ -29,19 +34,19 @@ func (f *Codec_hardware_r264) HwDeviceInit(args ffmpeg.Args, fullhw bool) ffmpeg
 }
 
 // Initialise a video filter for HW encoding
-func (c *Codec_hardware_r264) hwFilterInit(fullhw bool) VideoFilter {
-	var videoFilter VideoFilter
+func (c *Codec_hardware_r264) HwFilterInit(fullhw bool) ffmpeg.VideoFilter {
+	var videoFilter ffmpeg.VideoFilter
 	return videoFilter
 }
 
 // Apply format switching if applicable
-func (c *Codec_hardware_r264) hwApplyFullHWFilter(args VideoFilter, fullhw bool) VideoFilter {
+func (c *Codec_hardware_r264) HwApplyFullHWFilter(args ffmpeg.VideoFilter, fullhw bool) ffmpeg.VideoFilter {
 	return args
 }
 
 // Switch scaler
-func (c *Codec_hardware_r264) hwApplyScaleTemplate(sargs string, match []int, vf *models.VideoFile, fullhw bool) VideoFilter {
-	return VideoFilter(sargs)
+func (c *Codec_hardware_r264) HwApplyScaleTemplate(sargs string, match []int, vf *models.VideoFile, fullhw bool) ffmpeg.VideoFilter {
+	return ffmpeg.VideoFilter(sargs)
 }
 
 // Returns the max resolution for a given codec, or a default
@@ -50,17 +55,17 @@ func (c *Codec_hardware_r264) HwCodecMaxRes() (int, int) {
 }
 
 // Return if a hardware accelerated for HLS is available
-func (c *Codec_hardware_r264) hwCodecHLSCompatible() bool {
+func (c *Codec_hardware_r264) HwCodecHLSCompatible() bool {
 	return true
 }
 
 // Return if a hardware accelerated codec for MP4 is available
-func (c *Codec_hardware_r264) hwCodecMP4Compatible() bool {
+func (c *Codec_hardware_r264) HwCodecMP4Compatible() bool {
 	return false
 }
 
 // Return if a hardware accelerated codec for WebM is available
-func (c *Codec_hardware_r264) hwCodecWEBMCompatible() bool {
+func (c *Codec_hardware_r264) HwCodecWEBMCompatible() bool {
 	return false
 }
 

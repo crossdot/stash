@@ -24,6 +24,11 @@ func (c *Codec_hardware_rk264) CodeName() string {
 	return "h264_rkmpp"
 }
 
+func (c *Codec_hardware_rk264) CodecInit() (args ffmpeg.Args) {
+	args = args.VideoCodec(codec)
+	return args
+}
+
 func (c *Codec_hardware_rk264) HwDeviceInit(args ffmpeg.Args, fullhw bool) ffmpeg.Args {
 	// Rockchip: always create rkmpp device and make it the filter device, so
 	// scale_rkrga and subsequent hwupload/hwmap operate in the right context.
@@ -41,8 +46,8 @@ func (c *Codec_hardware_rk264) HwDeviceInit(args ffmpeg.Args, fullhw bool) ffmpe
 }
 
 // Initialise a video filter for HW encoding
-func (c *Codec_hardware_rk264) hwFilterInit(fullhw bool) VideoFilter {
-	var videoFilter VideoFilter
+func (c *Codec_hardware_rk264) HwFilterInit(fullhw bool) ffmpeg.VideoFilter {
+	var videoFilter ffmpeg.VideoFilter
 	// For Rockchip full-hw, do NOT pre-map to rkrga here. scale_rkrga can
 	// consume DRM_PRIME frames directly when filter_hw_device is set.
 	// For non-fullhw, keep a sane software format.
@@ -54,14 +59,14 @@ func (c *Codec_hardware_rk264) hwFilterInit(fullhw bool) VideoFilter {
 }
 
 // Apply format switching if applicable
-func (c *Codec_hardware_rk264) hwApplyFullHWFilter(args VideoFilter, fullhw bool) VideoFilter {
+func (c *Codec_hardware_rk264) HwApplyFullHWFilter(args ffmpeg.VideoFilter, fullhw bool) ffmpeg.VideoFilter {
 	// For Rockchip, no extra mapping here. If there is no scale filter,
 	// leave frames in DRM_PRIME for the encoder.
 	return args
 }
 
 // Switch scaler
-func (c *Codec_hardware_rk264) hwApplyScaleTemplate(sargs string, match []int, vf *models.VideoFile, fullhw bool) VideoFilter {
+func (c *Codec_hardware_rk264) HwApplyScaleTemplate(sargs string, match []int, vf *models.VideoFile, fullhw bool) ffmpeg.VideoFilter {
 	var template string
 
 	// The original filter chain is a fallback for maximum compatibility:
@@ -73,7 +78,7 @@ func (c *Codec_hardware_rk264) hwApplyScaleTemplate(sargs string, match []int, v
 	template = "scale_rkrga=$value"
 
 	// Rockchip's scale_rkrga supports -1/-2; don't apply minus-one hack here.
-	return VideoFilter(templateReplaceScale(sargs, template, match, vf, false))
+	return ffmpeg.VideoFilter(templateReplaceScale(sargs, template, match, vf, false))
 }
 
 // Returns the max resolution for a given codec, or a default
@@ -82,17 +87,17 @@ func (c *Codec_hardware_rk264) HwCodecMaxRes() (int, int) {
 }
 
 // Return if a hardware accelerated for HLS is available
-func (c *Codec_hardware_rk264) hwCodecHLSCompatible() bool {
+func (c *Codec_hardware_rk264) HwCodecHLSCompatible() bool {
 	return true
 }
 
 // Return if a hardware accelerated codec for MP4 is available
-func (c *Codec_hardware_rk264) hwCodecMP4Compatible() bool {
+func (c *Codec_hardware_rk264) HwCodecMP4Compatible() bool {
 	return true
 }
 
 // Return if a hardware accelerated codec for WebM is available
-func (c *Codec_hardware_rk264) hwCodecWEBMCompatible() bool {
+func (c *Codec_hardware_rk264) HwCodecWEBMCompatible() bool {
 	return false
 }
 

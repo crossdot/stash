@@ -145,16 +145,6 @@ func (b *BaseHardwareVideoCodec) hwCanFullHWTranscode(ctx context.Context, vf *m
 	return true
 }
 
-// Prepend input for hardware encoding only
-// func (f *BaseHardwareVideoCodec) HwDeviceInit(args ffmpeg.Args, fullhw bool) ffmpeg.Args {
-// 	return args
-// }
-
-// Initialise a video filter for HW encoding
-// func (f *FFMpeg) hwFilterInit(toCodec VideoCodec, fullhw bool) VideoFilter {
-// 	return nil
-// }
-
 var scaler_re = regexp.MustCompile(`scale=(?P<value>([-\d]+):([-\d]+))`)
 
 func templateReplaceScale(input string, template string, match []int, vf *models.VideoFile, minusonehack bool) string {

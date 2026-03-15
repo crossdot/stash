@@ -1,6 +1,9 @@
 package videocodec_software
 
-import "github.com/stashapp/stash/pkg/codec"
+import (
+	"github.com/stashapp/stash/pkg/codec"
+	"github.com/stashapp/stash/pkg/ffmpeg"
+)
 
 type Codec_software_libwebp struct {
 	BaseSoftwareVideoCodec
@@ -18,6 +21,11 @@ func (f *Codec_software_libwebp) Name() string {
 
 func (f *Codec_software_libwebp) CodeName() string {
 	return "libwebp"
+}
+
+func (c *Codec_software_libwebp) CodecInit() (args ffmpeg.Args) {
+	args = args.VideoCodec(codec)
+	return args
 }
 
 var _ codec.Codec = (*Codec_software_libwebp)(nil)

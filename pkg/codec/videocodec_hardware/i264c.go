@@ -16,12 +16,21 @@ func NewCodec_hardware_i264c() *Codec_hardware_i264c {
 	return c
 }
 
-func (f *Codec_hardware_i264c) Name() string {
+func (c *Codec_hardware_i264c) Name() string {
 	return "H264 Intel Quick Sync Video (QSV) Compatibility profile"
 }
 
-func (f *Codec_hardware_i264c) CodeName() string {
+func (c *Codec_hardware_i264c) CodeName() string {
 	return "h264_qsv"
+}
+
+func (c *Codec_hardware_i264c) CodecInit() (args ffmpeg.Args) {
+	args = args.VideoCodec(codec)
+	args = append(args,
+		"-q", "20",
+		"-preset", "faster",
+	)
+	return args
 }
 
 func (f *Codec_hardware_i264c) HwDeviceInit(args ffmpeg.Args, fullhw bool) ffmpeg.Args {
@@ -40,8 +49,8 @@ func (f *Codec_hardware_i264c) HwDeviceInit(args ffmpeg.Args, fullhw bool) ffmpe
 }
 
 // Initialise a video filter for HW encoding
-func (c *Codec_hardware_i264c) hwFilterInit(fullhw bool) VideoFilter {
-	var videoFilter VideoFilter
+func (c *Codec_hardware_i264c) HwFilterInit(fullhw bool) ffmpeg.VideoFilter {
+	var videoFilter ffmpeg.VideoFilter
 	if !fullhw {
 		videoFilter = videoFilter.Append("hwupload=extra_hw_frames=64")
 		videoFilter = videoFilter.Append("format=qsv")
@@ -50,7 +59,7 @@ func (c *Codec_hardware_i264c) hwFilterInit(fullhw bool) VideoFilter {
 }
 
 // Apply format switching if applicable
-func (c *Codec_hardware_i264c) hwApplyFullHWFilter(args VideoFilter, fullhw bool) VideoFilter {
+func (c *Codec_hardware_i264c) HwApplyFullHWFilter(args ffmpeg.VideoFilter, fullhw bool) ffmpeg.VideoFilter {
 	if fullhw && f.version.Gteq(Version{major: 3, minor: 3}) { // Added in FFMpeg 3.3
 		args = args.Append("scale_qsv=format=nv12")
 	}
@@ -58,7 +67,7 @@ func (c *Codec_hardware_i264c) hwApplyFullHWFilter(args VideoFilter, fullhw bool
 }
 
 // Switch scaler
-func (c *Codec_hardware_i264c) hwApplyScaleTemplate(sargs string, match []int, vf *models.VideoFile, fullhw bool) VideoFilter {
+func (c *Codec_hardware_i264c) HwApplyScaleTemplate(sargs string, match []int, vf *models.VideoFile, fullhw bool) ffmpeg.VideoFilter {
 	var template string
 
 	template = "scale_qsv=$value"
@@ -67,7 +76,7 @@ func (c *Codec_hardware_i264c) hwApplyScaleTemplate(sargs string, match []int, v
 	}
 
 	// BUG: [scale_qsv]: Size values less than -1 are not acceptable.
-	return VideoFilter(templateReplaceScale(sargs, template, match, vf, true))
+	return ffmpeg.VideoFilter(templateReplaceScale(sargs, template, match, vf, true))
 }
 
 // Returns the max resolution for a given codec, or a default
@@ -76,17 +85,17 @@ func (c *Codec_hardware_i264c) HwCodecMaxRes() (int, int) {
 }
 
 // Return if a hardware accelerated for HLS is available
-func (c *Codec_hardware_i264c) hwCodecHLSCompatible() bool {
+func (c *Codec_hardware_i264c) HwCodecHLSCompatible() bool {
 	return true
 }
 
 // Return if a hardware accelerated codec for MP4 is available
-func (c *Codec_hardware_i264c) hwCodecMP4Compatible() bool {
+func (c *Codec_hardware_i264c) HwCodecMP4Compatible() bool {
 	return true
 }
 
 // Return if a hardware accelerated codec for WebM is available
-func (c *Codec_hardware_i264c) hwCodecWEBMCompatible() bool {
+func (c *Codec_hardware_i264c) HwCodecWEBMCompatible() bool {
 	return false
 }
 

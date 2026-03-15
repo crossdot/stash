@@ -20,6 +20,8 @@ type Codec interface {
 	// Decoder
 	Name() string
 	CodeName() string
+
+	CodecInit() (args ffmpeg.Args)
 }
 
 type HardwareCodec interface {
@@ -28,17 +30,17 @@ type HardwareCodec interface {
 	// Prepend input for hardware encoding only
 	HwDeviceInit(ffmpeg.Args, bool) ffmpeg.Args
 	// Initialise a video filter for HW encoding
-	HwFilterInit(fullhw bool) VideoFilter
+	HwFilterInit(fullhw bool) ffmpeg.VideoFilter
 	// Apply format switching if applicable
-	hwApplyFullHWFilter(args VideoFilter, fullhw bool) VideoFilter
+	HwApplyFullHWFilter(args ffmpeg.VideoFilter, fullhw bool) ffmpeg.VideoFilter
 	// Switch scaler
-	hwApplyScaleTemplate(sargs string, match []int, vf *models.VideoFile, fullhw bool) VideoFilter
+	HwApplyScaleTemplate(sargs string, match []int, vf *models.VideoFile, fullhw bool) ffmpeg.VideoFilter
 	// Returns the max resolution for a given codec, or a default
 	HwCodecMaxRes() (int, int)
 	// Return if a hardware accelerated for HLS is available
-	hwCodecHLSCompatible() bool
+	HwCodecHLSCompatible() bool
 	// Return if a hardware accelerated codec for MP4 is available
-	hwCodecMP4Compatible() bool
+	HwCodecMP4Compatible() bool
 	// Return if a hardware accelerated codec for WebM is available
-	hwCodecWEBMCompatible() bool
+	HwCodecWEBMCompatible() bool
 }

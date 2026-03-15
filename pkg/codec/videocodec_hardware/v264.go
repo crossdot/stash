@@ -16,12 +16,20 @@ func NewCodec_hardware_v264() *Codec_hardware_v264 {
 	return c
 }
 
-func (f *Codec_hardware_v264) Name() string {
+func (c *Codec_hardware_v264) Name() string {
 	return "H264 VAAPI"
 }
 
-func (f *Codec_hardware_v264) CodeName() string {
+func (c *Codec_hardware_v264) CodeName() string {
 	return "h264_vaapi"
+}
+
+func (c *Codec_hardware_v264) CodecInit() (args ffmpeg.Args) {
+	args = args.VideoCodec(codec)
+	args = append(args,
+		"-qp", "20",
+	)
+	return args
 }
 
 func (f *Codec_hardware_v264) HwDeviceInit(args ffmpeg.Args, fullhw bool) ffmpeg.Args {
@@ -29,8 +37,8 @@ func (f *Codec_hardware_v264) HwDeviceInit(args ffmpeg.Args, fullhw bool) ffmpeg
 }
 
 // Initialise a video filter for HW encoding
-func (c *Codec_hardware_v264) hwFilterInit(fullhw bool) VideoFilter {
-	var videoFilter VideoFilter
+func (c *Codec_hardware_v264) HwFilterInit(fullhw bool) ffmpeg.VideoFilter {
+	var videoFilter ffmpeg.VideoFilter
 	if !fullhw {
 		videoFilter = videoFilter.Append("format=nv12")
 		videoFilter = videoFilter.Append("hwupload")
@@ -39,7 +47,7 @@ func (c *Codec_hardware_v264) hwFilterInit(fullhw bool) VideoFilter {
 }
 
 // Apply format switching if applicable
-func (c *Codec_hardware_v264) hwApplyFullHWFilter(args VideoFilter, fullhw bool) VideoFilter {
+func (c *Codec_hardware_v264) HwApplyFullHWFilter(args ffmpeg.VideoFilter, fullhw bool) ffmpeg.VideoFilter {
 	if fullhw && f.version.Gteq(Version{major: 3, minor: 1}) { // Added in FFMpeg 3.1
 		args = args.Append("scale_vaapi=format=nv12")
 	}
@@ -47,7 +55,7 @@ func (c *Codec_hardware_v264) hwApplyFullHWFilter(args VideoFilter, fullhw bool)
 }
 
 // Switch scaler
-func (c *Codec_hardware_v264) hwApplyScaleTemplate(sargs string, match []int, vf *models.VideoFile, fullhw bool) VideoFilter {
+func (c *Codec_hardware_v264) HwApplyScaleTemplate(sargs string, match []int, vf *models.VideoFile, fullhw bool) ffmpeg.VideoFilter {
 	var template string
 
 	template = "scale_vaapi=$value"
@@ -55,7 +63,7 @@ func (c *Codec_hardware_v264) hwApplyScaleTemplate(sargs string, match []int, vf
 		template += ":format=nv12"
 	}
 
-	return VideoFilter(templateReplaceScale(sargs, template, match, vf, false))
+	return ffmpeg.VideoFilter(templateReplaceScale(sargs, template, match, vf, false))
 }
 
 // Returns the max resolution for a given codec, or a default
@@ -64,17 +72,17 @@ func (c *Codec_hardware_v264) HwCodecMaxRes() (int, int) {
 }
 
 // Return if a hardware accelerated for HLS is available
-func (c *Codec_hardware_v264) hwCodecHLSCompatible() bool {
+func (c *Codec_hardware_v264) HwCodecHLSCompatible() bool {
 	return true
 }
 
 // Return if a hardware accelerated codec for MP4 is available
-func (c *Codec_hardware_v264) hwCodecMP4Compatible() bool {
+func (c *Codec_hardware_v264) HwCodecMP4Compatible() bool {
 	return false
 }
 
 // Return if a hardware accelerated codec for WebM is available
-func (c *Codec_hardware_v264) hwCodecWEBMCompatible() bool {
+func (c *Codec_hardware_v264) HwCodecWEBMCompatible() bool {
 	return false
 }
 

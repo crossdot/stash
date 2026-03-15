@@ -16,12 +16,20 @@ func NewCodec_hardware_m264() *Codec_hardware_m264 {
 	return c
 }
 
-func (f *Codec_hardware_m264) Name() string {
+func (c *Codec_hardware_m264) Name() string {
 	return "H264 VideoToolbox"
 }
 
-func (f *Codec_hardware_m264) CodeName() string {
+func (c *Codec_hardware_m264) CodeName() string {
 	return "h264_videotoolbox"
+}
+
+func (c *Codec_hardware_m264) CodecInit() (args ffmpeg.Args) {
+	args = args.VideoCodec(codec)
+	args = append(args,
+		"-realtime", "1",
+	)
+	return args
 }
 
 func (f *Codec_hardware_m264) HwDeviceInit(args ffmpeg.Args, fullhw bool) ffmpeg.Args {
@@ -38,8 +46,8 @@ func (f *Codec_hardware_m264) HwDeviceInit(args ffmpeg.Args, fullhw bool) ffmpeg
 }
 
 // Initialise a video filter for HW encoding
-func (c *Codec_hardware_m264) hwFilterInit(fullhw bool) VideoFilter {
-	var videoFilter VideoFilter
+func (c *Codec_hardware_m264) HwFilterInit(fullhw bool) ffmpeg.VideoFilter {
+	var videoFilter ffmpeg.VideoFilter
 	if !fullhw {
 		videoFilter = videoFilter.Append("format=nv12")
 		videoFilter = videoFilter.Append("hwupload")
@@ -48,18 +56,18 @@ func (c *Codec_hardware_m264) hwFilterInit(fullhw bool) VideoFilter {
 }
 
 // Apply format switching if applicable
-func (c *Codec_hardware_m264) hwApplyFullHWFilter(args VideoFilter, fullhw bool) VideoFilter {
+func (c *Codec_hardware_m264) HwApplyFullHWFilter(args ffmpeg.VideoFilter, fullhw bool) ffmpeg.VideoFilter {
 	return args
 }
 
 // Switch scaler
-func (c *Codec_hardware_m264) hwApplyScaleTemplate(sargs string, match []int, vf *models.VideoFile, fullhw bool) VideoFilter {
+func (c *Codec_hardware_m264) HwApplyScaleTemplate(sargs string, match []int, vf *models.VideoFile, fullhw bool) ffmpeg.VideoFilter {
 	var template string
 
 	template = "scale_vt=$value"
 
 	// BUG: scale_vt doesn't call ff_scale_adjust_dimensions, thus cant accept negative size values
-	return VideoFilter(templateReplaceScale(sargs, template, match, vf, true))
+	return ffmpeg.VideoFilter(templateReplaceScale(sargs, template, match, vf, true))
 }
 
 // Returns the max resolution for a given codec, or a default
@@ -68,17 +76,17 @@ func (c *Codec_hardware_m264) HwCodecMaxRes() (int, int) {
 }
 
 // Return if a hardware accelerated for HLS is available
-func (c *Codec_hardware_m264) hwCodecHLSCompatible() bool {
+func (c *Codec_hardware_m264) HwCodecHLSCompatible() bool {
 	return true
 }
 
 // Return if a hardware accelerated codec for MP4 is available
-func (c *Codec_hardware_m264) hwCodecMP4Compatible() bool {
+func (c *Codec_hardware_m264) HwCodecMP4Compatible() bool {
 	return true
 }
 
 // Return if a hardware accelerated codec for WebM is available
-func (c *Codec_hardware_m264) hwCodecWEBMCompatible() bool {
+func (c *Codec_hardware_m264) HwCodecWEBMCompatible() bool {
 	return false
 }
 

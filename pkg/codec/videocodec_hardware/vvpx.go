@@ -16,12 +16,17 @@ func NewCodec_hardware_vvpx() *Codec_hardware_vvpx {
 	return c
 }
 
-func (f *Codec_hardware_vvpx) Name() string {
+func (c *Codec_hardware_vvpx) Name() string {
 	return "VP8 VAAPI"
 }
 
-func (f *Codec_hardware_vvpx) CodeName() string {
+func (c *Codec_hardware_vvpx) CodeName() string {
 	return "vp8_vaapi"
+}
+
+func (c *Codec_hardware_vvpx) CodecInit() (args ffmpeg.Args) {
+	args = args.VideoCodec(codec)
+	return args
 }
 
 func (f *Codec_hardware_vvpx) HwDeviceInit(args ffmpeg.Args, fullhw bool) ffmpeg.Args {
@@ -37,19 +42,19 @@ func (f *Codec_hardware_vvpx) HwDeviceInit(args ffmpeg.Args, fullhw bool) ffmpeg
 }
 
 // Initialise a video filter for HW encoding
-func (c *Codec_hardware_vvpx) hwFilterInit(fullhw bool) VideoFilter {
-	var videoFilter VideoFilter
+func (c *Codec_hardware_vvpx) HwFilterInit(fullhw bool) ffmpeg.VideoFilter {
+	var videoFilter ffmpeg.VideoFilter
 	return videoFilter
 }
 
 // Apply format switching if applicable
-func (c *Codec_hardware_vvpx) hwApplyFullHWFilter(args VideoFilter, fullhw bool) VideoFilter {
+func (c *Codec_hardware_vvpx) HwApplyFullHWFilter(args ffmpeg.VideoFilter, fullhw bool) ffmpeg.VideoFilter {
 	return args
 }
 
 // Switch scaler
-func (c *Codec_hardware_vvpx) hwApplyScaleTemplate(sargs string, match []int, vf *models.VideoFile, fullhw bool) VideoFilter {
-	return VideoFilter(sargs)
+func (c *Codec_hardware_vvpx) HwApplyScaleTemplate(sargs string, match []int, vf *models.VideoFile, fullhw bool) ffmpeg.VideoFilter {
+	return ffmpeg.VideoFilter(sargs)
 }
 
 // Returns the max resolution for a given codec, or a default
@@ -58,17 +63,17 @@ func (c *Codec_hardware_vvpx) HwCodecMaxRes() (int, int) {
 }
 
 // Return if a hardware accelerated for HLS is available
-func (c *Codec_hardware_vvpx) hwCodecHLSCompatible() bool {
+func (c *Codec_hardware_vvpx) HwCodecHLSCompatible() bool {
 	return false
 }
 
 // Return if a hardware accelerated codec for MP4 is available
-func (c *Codec_hardware_vvpx) hwCodecMP4Compatible() bool {
+func (c *Codec_hardware_vvpx) HwCodecMP4Compatible() bool {
 	return false
 }
 
 // Return if a hardware accelerated codec for WebM is available
-func (c *Codec_hardware_vvpx) hwCodecWEBMCompatible() bool {
+func (c *Codec_hardware_vvpx) HwCodecWEBMCompatible() bool {
 	return false
 }
 
