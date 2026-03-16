@@ -14,7 +14,7 @@ func NewAudioCodec_libopus() *AudioCodec_libopus {
 	return c
 }
 
-func (f *AudioCodec_libopus) Name() string {
+func (f *AudioCodec_libopus) CodeName() string {
 	return "libopus"
 }
 

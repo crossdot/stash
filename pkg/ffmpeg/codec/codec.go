@@ -21,6 +21,7 @@ type VideoCodec interface {
 	Name() string
 	CodeName() string
 
+	Args() []string
 	CodecInit() (args ffmpeg.Args)
 }
 
@@ -46,5 +47,7 @@ type HardwareVideoCodec interface {
 }
 
 type AudioCodec interface {
-	Name() string
+	CodeName() string
+
+	Args() []string
 }

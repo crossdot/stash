@@ -14,7 +14,7 @@ func NewAudioCodec_aac() *AudioCodec_aac {
 	return c
 }
 
-func (f *AudioCodec_aac) Name() string {
+func (f *AudioCodec_aac) CodeName() string {
 	return "aac"
 }
 

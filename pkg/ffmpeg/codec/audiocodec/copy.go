@@ -14,7 +14,7 @@ func NewAudioCodec_copy() *AudioCodec_copy {
 	return c
 }
 
-func (f *AudioCodec_copy) Name() string {
+func (f *AudioCodec_copy) CodeName() string {
 	return "copy"
 }
 

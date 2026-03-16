@@ -21,6 +21,10 @@ type BaseHardwareVideoCodec struct {
 	self codec.VideoCodec
 }
 
+func (b *BaseHardwareVideoCodec) Args() []string {
+	return []string{"-c:v", string(b.self.CodeName())}
+}
+
 func (b *BaseHardwareVideoCodec) InitHWSupport(ctx context.Context) bool {
 	if b.self == nil {
 		panic("hardware codec not initialized correctly")
